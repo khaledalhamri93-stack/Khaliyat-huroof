@@ -176,7 +176,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 </section>
 
 <section class="screen" id="home" hidden aria-label="الشاشة الرئيسية">
-  <button class="gear" id="setOpen" aria-haspopup="dialog">⚙ الإعدادات</button>
   <div class="brand hero">
     <svg class="logo" viewBox="0 0 300 300" role="img" aria-label="شعار خلية حروف"><use href="#logo"/></svg>
     <h1 style="margin:0;font-size:clamp(40px,7vw,64px);font-weight:900">خلية حروف</h1>
@@ -184,14 +183,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div class="chips"><span class="t1" id="hn1">-</span><span class="vs">ضد</span><span class="t2" id="hn2">-</span></div>
   </div>
   <div class="actions">
-    <button class="big go" id="start">▶ ابدأ اللعبة</button>
+    <button class="big go" id="setOpen" aria-haspopup="dialog">▶ ابدأ اللعبة</button>
     <button class="big exit" id="exitBtn">⏻ خروج</button>
   </div>
 </section>
 
 <div class="ovl" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="panel setpanel">
-      <div class="sethead"><h2 id="setTitle">⚙ إعدادات اللعبة</h2><button class="xbtn" id="setClose" aria-label="إغلاق">✕</button></div>
+      <div class="sethead"><h2 id="setTitle">⚙ إعدادات اللعبة قبل البدء</h2><button class="xbtn" id="setClose" aria-label="إغلاق">✕</button></div>
       <div class="teams">
         <div class="tcard t1"><label for="n1">اسم الفريق الأول</label><input id="n1" maxlength="22" value="الفريق الأول" placeholder="الفريق الأول"><small>اللون الأخضر · يصل بين اليمين واليسار ⟷</small></div>
         <div class="tcard t2"><label for="n2">اسم الفريق الثاني</label><input id="n2" maxlength="22" value="الفريق الثاني" placeholder="الفريق الثاني"><small>اللون البرتقالي · يصل بين الأعلى والأسفل ↕</small></div>
@@ -204,7 +203,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
         <div class="opt"><span>ترتيب الحروف</span><div class="seg" data-k="shuffle"><button data-v="0">أبجدي</button><button data-v="1">عشوائي</button></div></div>
         <div class="opt"><span>الصوت</span><div class="seg" data-k="sound"><button data-v="1">مفعّل</button><button data-v="0">مكتوم</button></div></div>
       </div>
-      <div class="actions"><button class="big go" id="setSave">✔ حفظ الإعدادات</button></div>
+      <div class="actions"><button class="big go" id="start">▶ ابدأ اللعبة</button><button class="big exit" id="setSave">رجوع</button></div>
     </div>
 </div>
 
@@ -472,7 +471,7 @@ $('setSave').addEventListener('click',closeSettings);
 $('settings').addEventListener('click',e=>{ if(e.target.id==='settings') closeSettings(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('settings').hidden) closeSettings(); });
 /* buttons */
-$('start').addEventListener('click',startGame);
+$('start').addEventListener('click',()=>{ $('settings').hidden=true; syncHomeNames(); startGame(); });
 $('finish').addEventListener('click',()=>{ cancelAnimationFrame(CF); SFX.click(); G=null; show('home'); });
 $('toHome').addEventListener('click',()=>{ SFX.click(); closeQ(); G=null; show('home'); });
 $('endEarly').addEventListener('click',()=>{ if(!G) return; G.over=true; endGame(null,'early'); });
