@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>خلية حروف</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script>document.documentElement.dir="rtl";document.documentElement.lang="ar";</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: one-screen arcade board — splash → home+settings → game (scoreboard / hive / question card) → winner. Deliberately single dark theme. */
+:root{
+  --night:#0b2a33; --night2:#0e3a45; --ink:#1d2b3a; --paper:#fffdf6;
+  --teal:#0f9d9a; --teal-d:#0b6e75; --gold:#ffd34e; --gold-d:#d9a441;
+  --green:#22b45f; --green-d:#16703d; --orange:#ff8a3d; --orange-d:#c25a17;
+  --blue:#4c7cf0; --pink:#ff6f91; --muted:#9fb8bd;
+  --f:"Tajawal","Segoe UI",Tahoma,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--night);color:#fff;font-family:var(--f);overflow:hidden;-webkit-tap-highlight-color:transparent}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.07;background-image:radial-gradient(circle at 50% 50%,transparent 38%,#fff 39%,#fff 41%,transparent 42%),linear-gradient(45deg,transparent 47%,#fff 48%,#fff 52%,transparent 53%),linear-gradient(-45deg,transparent 47%,#fff 48%,#fff 52%,transparent 53%);background-size:56px 56px}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));transition:opacity .35s ease}
+.screen[hidden]{display:none!important}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* splash */
+#splash{gap:22px;background:radial-gradient(circle at 50% 40%,#13525f,var(--night) 70%)}
+.logo{width:min(260px,60vw);filter:drop-shadow(0 10px 30px rgba(0,0,0,.4));animation:pop .9s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{transform:scale(.6) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+.load{width:min(420px,80vw);height:20px;border-radius:20px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);overflow:hidden}
+.load i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold),var(--orange));border-radius:20px;transition:width .12s linear}
+.ltxt{font-weight:700;color:var(--muted);font-size:15px}
+
+/* home */
+#home{gap:18px;overflow:auto;justify-content:flex-start;padding-top:max(24px,env(safe-area-inset-top,0px))}
+.home-wrap{width:min(980px,100%);display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start;margin:auto 0}
+.brand{display:grid;justify-items:center;gap:10px;text-align:center}
+.brand .logo{width:220px}
+.brand p{margin:0;color:var(--muted);font-weight:600;line-height:1.6}
+.panel{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.14);border-radius:24px;padding:18px 20px;display:grid;gap:14px;min-width:0}
+.panel h2{margin:0;font-size:22px;font-weight:900;color:var(--gold);display:flex;align-items:center;gap:8px}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tcard{border-radius:18px;padding:12px;display:grid;gap:6px;border:3px solid var(--c);background:color-mix(in srgb,var(--c) 18%,transparent)}
+.tcard label{font-weight:800;font-size:14px;color:#fff}
+.tcard input{font-family:inherit;font-size:18px;font-weight:800;border:0;border-radius:12px;padding:8px 12px;background:#fff;color:var(--ink);width:100%}
+.tcard small{color:#dfeceb;font-weight:600}
+.t1{--c:var(--green)}.t2{--c:var(--orange)}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.opt{display:grid;gap:6px;min-width:0}
+.opt>span{font-weight:800;font-size:14px;color:#dfeceb}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:2px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:12px;padding:6px 12px;font-weight:800;font-size:15px}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.big{border:0;border-radius:18px;padding:14px 34px;font-size:22px;font-weight:900;box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .1s}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.go{background:linear-gradient(180deg,#ffe07a,var(--gold));color:var(--ink)}
+.exit{background:#33525a;color:#fff}
+.small{border:2px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:14px;padding:8px 16px;font-weight:800;font-size:15px}
+
+/* game */
+#game{justify-content:flex-start;gap:8px;padding-top:max(10px,env(safe-area-inset-top,0px))}
+.bar{width:min(1100px,100%);display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+.score{display:flex;align-items:center;gap:10px;border-radius:20px;padding:8px 14px;background:color-mix(in srgb,var(--c) 22%,transparent);border:3px solid var(--c);min-width:0;transition:box-shadow .3s,transform .3s}
+.score.on{box-shadow:0 0 0 4px var(--gold),0 0 30px color-mix(in srgb,var(--c) 70%,transparent);transform:scale(1.03)}
+.score .nm{font-weight:900;font-size:clamp(15px,2.2vw,22px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.score .pt{font-weight:900;font-size:clamp(24px,3.6vw,40px);background:var(--c);border-radius:14px;padding:0 14px;min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.score .dir{font-size:12px;color:#e6f2f0;font-weight:700;display:block}
+.turn{text-align:center;display:grid;gap:2px}
+.turn small{color:var(--muted);font-weight:700}
+.turn b{font-size:clamp(17px,2.4vw,26px);font-weight:900;padding:4px 18px;border-radius:30px;background:var(--c);box-shadow:0 4px 0 rgba(0,0,0,.3);white-space:nowrap;display:inline-block;animation:flip .45s ease}
+@keyframes flip{from{transform:rotateX(90deg)}to{transform:none}}
+.boardwrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+#board{width:min(100%,760px);height:100%;max-height:calc(100vh - 150px)}
+.cell{cursor:pointer;transition:transform .15s}
+.cell polygon{transition:fill .35s ease}
+.cell:hover polygon.face{filter:brightness(1.12)}
+.cell.done{cursor:default}
+.cell text{pointer-events:none;font-family:var(--f);font-weight:900}
+.cell.win polygon.face{animation:glow 1s ease-in-out infinite alternate}
+@keyframes glow{to{filter:brightness(1.35) drop-shadow(0 0 8px #fff)}}
+.foot{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* question overlay */
+.ovl{position:fixed;inset:0;background:rgba(5,20,25,.72);display:grid;place-items:center;padding:16px;z-index:20;backdrop-filter:blur(3px)}
+.ovl[hidden]{display:none!important}
+.qcard{width:min(720px,100%);background:var(--paper);color:var(--ink);border-radius:28px;padding:22px 24px 20px;display:grid;gap:14px;border:6px solid var(--c);box-shadow:0 20px 60px rgba(0,0,0,.5);animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
+.qhead{display:flex;align-items:center;gap:14px}
+.qletter{width:78px;height:88px;flex:none;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--c);color:#fff;display:grid;place-items:center;font-size:44px;font-weight:900}
+.qwho{flex:1;display:grid;gap:2px}
+.qwho small{color:#5d6b78;font-weight:700}
+.qwho b{font-size:22px;font-weight:900;color:var(--c)}
+.timer{width:84px;height:84px;flex:none;position:relative}
+.timer svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer span{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;font-weight:900;font-variant-numeric:tabular-nums}
+.timer.low span{color:#d64545}
+.qtext{font-size:clamp(22px,3.4vw,32px);font-weight:800;line-height:1.5;text-align:center;margin:4px 0}
+.qhint{text-align:center;color:#5d6b78;font-weight:700}
+.ans{text-align:center;font-size:28px;font-weight:900;color:var(--green-d);background:#e3f6ea;border-radius:16px;padding:6px}
+.ans[hidden]{display:none}
+.qbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.qbtns button{border:0;border-radius:16px;padding:12px 22px;font-size:19px;font-weight:900;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.ok{background:var(--green);color:#fff}.no{background:#e04b4b;color:#fff}.rv{background:#e9edf0;color:var(--ink)}.nx{background:var(--teal);color:#fff}
+.msg{text-align:center;font-weight:900;font-size:20px;padding:6px;border-radius:14px}
+.msg.bad{background:#fde8e8;color:#b02a2a}.msg.good{background:#e3f6ea;color:var(--green-d)}
+
+/* winner */
+#win{gap:16px;text-align:center;background:radial-gradient(circle at 50% 40%,#13525f,var(--night) 70%)}
+#confetti{position:fixed;inset:0;pointer-events:none}
+.trophy{font-size:90px;line-height:1;animation:pop .8s cubic-bezier(.2,1.6,.4,1) both}
+.wtitle{font-size:clamp(22px,4vw,34px);font-weight:800;color:var(--muted);margin:0}
+.wname{font-size:clamp(40px,8vw,86px);font-weight:900;margin:0;color:var(--c);text-shadow:0 6px 0 rgba(0,0,0,.3);animation:pop .9s .2s cubic-bezier(.2,1.6,.4,1) both}
+.wscore{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.wscore div{border:3px solid var(--c);border-radius:18px;padding:8px 18px;font-weight:900;font-size:20px;background:color-mix(in srgb,var(--c) 20%,transparent)}
+.cheer{font-size:22px;font-weight:800;color:var(--gold)}
+
+/* exit */
+#bye{gap:14px;text-align:center}
+#bye h1{margin:0;font-size:40px;font-weight:900;color:var(--gold)}
+#bye p{margin:0;color:var(--muted);font-weight:700;font-size:18px}
+
+@media (max-width:760px){
+  .home-wrap{grid-template-columns:1fr}
+  .brand .logo{width:150px}
+  .teams,.opts{grid-template-columns:1fr}
+  .bar{grid-template-columns:1fr 1fr;grid-template-areas:"t t" "a b"}
+  .turn{grid-area:t}.s1{grid-area:a}.s2{grid-area:b}
+  .score{padding:6px 8px;gap:6px}.score .dir{display:none}
+  #board{max-height:calc(100vh - 190px)}
+  .qhead{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<!-- shared logo -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 300 300">
+    <defs>
+      <linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fd17f"/><stop offset="1" stop-color="#16703d"/></linearGradient>
+      <linearGradient id="lgO" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb070"/><stop offset="1" stop-color="#c25a17"/></linearGradient>
+      <linearGradient id="lgT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2fc6c2"/><stop offset="1" stop-color="#0b6e75"/></linearGradient>
+    </defs>
+    <g stroke="#fff" stroke-width="6" stroke-linejoin="round">
+      <polygon points="150,22 208,55 208,121 150,154 92,121 92,55" fill="url(#lgT)"/>
+      <polygon points="90,126 148,159 148,225 90,258 32,225 32,159" fill="url(#lgG)"/>
+      <polygon points="210,126 268,159 268,225 210,258 152,225 152,159" fill="url(#lgO)"/>
+    </g>
+    <text x="150" y="112" text-anchor="middle" font-size="76" font-weight="900" fill="#fff" font-family="Tajawal">ح</text>
+    <text x="90" y="216" text-anchor="middle" font-size="64" font-weight="900" fill="#fff" font-family="Tajawal">ر</text>
+    <text x="210" y="216" text-anchor="middle" font-size="64" font-weight="900" fill="#fff" font-family="Tajawal">ف</text>
+  </symbol>
+</svg>
+
+<section class="screen" id="splash" aria-label="شاشة التحميل">
+  <svg class="logo" viewBox="0 0 300 300" role="img" aria-label="شعار خلية حروف"><use href="#logo"/></svg>
+  <h1 style="margin:0;font-size:clamp(34px,6vw,56px);font-weight:900">خلية حروف</h1>
+  <div class="load" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="loadbar"></i></div>
+  <div class="ltxt" id="loadtxt">جارٍ تجهيز الخلايا…</div>
+</section>
+
+<section class="screen" id="home" hidden aria-label="الشاشة الرئيسية">
+  <div class="home-wrap">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 300 300" role="img" aria-label="شعار خلية حروف"><use href="#logo"/></svg>
+      <h1 style="margin:0;font-size:40px;font-weight:900">خلية حروف</h1>
+      <p>مسابقة الحروف بين فريقين<br>أسبوع الضاد · مدرسة سافرة الابتدائية الإعدادية للبنين</p>
+    </div>
+    <div class="panel">
+      <h2>⚙ إعدادات اللعبة</h2>
+      <div class="teams">
+        <div class="tcard t1"><label for="n1">اسم الفريق الأول</label><input id="n1" maxlength="22" value="فرسان الضاد"><small>اللون الأخضر · يصل بين اليمين واليسار ⟷</small></div>
+        <div class="tcard t2"><label for="n2">اسم الفريق الثاني</label><input id="n2" maxlength="22" value="نجوم البيان"><small>اللون البرتقالي · يصل بين الأعلى والأسفل ↕</small></div>
+      </div>
+      <div class="opts">
+        <div class="opt"><span>وقت السؤال</span><div class="seg" data-k="time"><button data-v="10">10 ث</button><button data-v="20">20 ث</button><button data-v="30">30 ث</button><button data-v="45">45 ث</button><button data-v="60">60 ث</button></div></div>
+        <div class="opt"><span>نقاط كل إجابة صحيحة</span><div class="seg" data-k="pts"><button data-v="1">1</button><button data-v="2">2</button><button data-v="5">5</button><button data-v="10">10</button></div></div>
+        <div class="opt"><span>مستوى الأسئلة</span><div class="seg" data-k="level"><button data-v="p">الأول – الثالث</button><button data-v="i">الرابع – الثالث الإعدادي</button></div></div>
+        <div class="opt"><span>من يبدأ؟</span><div class="seg" data-k="first"><button data-v="r">قرعة</button><button data-v="1">الأول</button><button data-v="2">الثاني</button></div></div>
+        <div class="opt"><span>ترتيب الحروف</span><div class="seg" data-k="shuffle"><button data-v="0">أبجدي</button><button data-v="1">عشوائي</button></div></div>
+        <div class="opt"><span>الصوت</span><div class="seg" data-k="sound"><button data-v="1">مفعّل</button><button data-v="0">مكتوم</button></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="big go" id="start">▶ ابدأ اللعبة</button>
+    <button class="big exit" id="exitBtn">⏻ خروج</button>
+  </div>
+</section>
+
+<section class="screen" id="game" hidden aria-label="لوحة اللعب">
+  <div class="bar">
+    <div class="score s1 t1" id="sc1"><span class="pt" id="p1">0</span><span class="nm"><span id="tn1">-</span><span class="dir">⟷ اليمين واليسار</span></span></div>
+    <div class="turn"><small>الدور الآن</small><b id="turnName" style="--c:var(--green)">-</b></div>
+    <div class="score s2 t2" id="sc2"><span class="nm" style="text-align:start"><span id="tn2">-</span><span class="dir">↕ الأعلى والأسفل</span></span><span class="pt" id="p2">0</span></div>
+  </div>
+  <div class="boardwrap"><svg id="board" role="grid" aria-label="لوحة خلية حروف"></svg></div>
+  <div class="foot">
+    <button class="small" id="endEarly">🏁 إنهاء الجولة</button>
+    <button class="small" id="toHome">⌂ الرئيسية</button>
+  </div>
+</section>
+
+<div class="ovl" id="qbox" hidden role="dialog" aria-modal="true" aria-labelledby="qtext">
+  <div class="qcard" id="qcard">
+    <div class="qhead">
+      <div class="qletter" id="qletter">أ</div>
+      <div class="qwho"><small id="qturnlbl">يجيب الآن</small><b id="qteam">-</b></div>
+      <div class="timer" id="timer"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="#e6e9ec" stroke-width="8"/><circle id="tring" cx="42" cy="42" r="36" fill="none" stroke="#22b45f" stroke-width="8" stroke-linecap="round" stroke-dasharray="226.2" stroke-dashoffset="0"/></svg><span id="tnum">20</span></div>
+    </div>
+    <div class="qtext" id="qtext">-</div>
+    <div class="qhint">الإجابة تبدأ بحرف <b id="qhl">أ</b> (ولا تُحسب «ال»)</div>
+    <div class="msg" id="qmsg" hidden></div>
+    <div class="ans" id="qans" hidden></div>
+    <div class="qbtns" id="qbtns">
+      <button class="ok" id="bOk">✔ إجابة صحيحة</button>
+      <button class="no" id="bNo">✘ إجابة خاطئة</button>
+      <button class="rv" id="bRv">👁 إظهار الإجابة</button>
+    </div>
+  </div>
+</div>
+
+<section class="screen" id="win" hidden aria-label="الفائز">
+  <canvas id="confetti"></canvas>
+  <div class="trophy">🏆</div>
+  <p class="wtitle" id="wtitle">الفريق الفائز</p>
+  <p class="wname" id="wname">-</p>
+  <div class="cheer" id="cheer">أحسنتم! أنتم فرسان لغة الضاد</div>
+  <div class="wscore" id="wscore"></div>
+  <button class="big go" id="finish">إنهاء اللعبة</button>
+</section>
+
+<section class="screen" id="bye" hidden aria-label="خروج">
+  <svg class="logo" viewBox="0 0 300 300" style="width:140px" aria-hidden="true"><use href="#logo"/></svg>
+  <h1>شكرًا لمشاركتكم</h1>
+  <p>لغتنا هويتنا · نلقاكم في جولة جديدة</p>
+  <button class="small" id="back">↩ العودة إلى اللعبة</button>
+</section>
+
+<script>
+const BANK = {"p": [["أ", "حيوان يُسمّى ملك الغابة", "أسد"], ["ب", "ندخل منه إلى البيت", "باب"], ["ت", "ثمر النخيل", "تمر"], ["ج", "حيوان يُسمّى سفينة الصحراء", "جمل"], ["ح", "نلبسه في القدم", "حذاء"], ["خ", "نأكله مع الطعام ويُصنع من الدقيق", "خبز"], ["د", "طائر يصيح في الصباح", "ديك"], ["ر", "الشهر الذي نصوم فيه", "رمضان"], ["ز", "نبتة ملوّنة جميلة في الحديقة", "زهرة"], ["س", "حيوان يعيش في الماء وله زعانف", "سمكة"], ["ش", "تشرق في الصباح وتعطينا الضوء", "شمس"], ["ص", "عكس كلمة «كبير»", "صغير"], ["ض", "حيوان يقفز ويقول: نق نق", "ضفدع"], ["ط", "من يتعلّم في المدرسة", "طالب"], ["ع", "نرى بها", "عين"], ["غ", "طائر لونه أسود", "غراب"], ["ف", "حيوان ضخم له خرطوم", "فيل"], ["ق", "نكتب به", "قلم"], ["ك", "نقرأ فيه", "كتاب"], ["ل", "عكس كلمة «نهار»", "ليل"], ["م", "المكان الذي نتعلّم فيه", "مدرسة"], ["ن", "شجرة تعطينا التمر", "نخلة"], ["ه", "نتنفّسه ولا نراه", "هواء"], ["و", "زهرة جميلة لها رائحة طيبة", "وردة"], ["ي", "عكس كلمة «يسار»", "يمين"]], "i": [["أ", "أداة استفهام نسأل بها عن المكان", "أين"], ["ب", "جمع كلمة «بحر»", "بحار"], ["ت", "ثمر النخيل", "تمر"], ["ج", "جمع كلمة «جزيرة»", "جُزُر"], ["ح", "«من، إلى، عن، على» تُسمّى …", "حروف الجر"], ["خ", "الكلمة التي تكمل معنى المبتدأ", "الخبر"], ["د", "كتاب يجمع قصائد شاعر واحد", "ديوان"], ["ر", "خط عربي نكتب به في حياتنا اليومية", "الرقعة"], ["ز", "ضد كلمة «نقصان»", "زيادة"], ["س", "اليوم الذي يأتي بعد الجمعة", "السبت"], ["ش", "كلام موزون مقفّى", "شعر"], ["ص", "كلمة تصف ما قبلها، وتُسمّى النعت", "صفة"], ["ض", "كلمة مثل: هو، هي، نحن", "ضمير"], ["ط", "من يتعلّم في المدرسة", "طالب"], ["ع", "علم وضعه الخليل بن أحمد لوزن الشعر", "العروض"], ["غ", "مرادف كلمة «المطر»", "غيث"], ["ف", "الاسم المرفوع الذي قام بالفعل", "فاعل"], ["ق", "الحرف الذي تنتهي به أبيات القصيدة", "القافية"], ["ك", "«خير جليس في الزمان»", "كتاب"], ["ل", "حرف جزم يدخل على المضارع، مثل: … يكتبْ", "لم"], ["م", "الاسم الذي وقع عليه فعل الفاعل", "المفعول به"], ["ن", "علم يضبط أواخر الكلمات", "نحو"], ["ه", "الحرف «ء» يُسمّى …", "همزة"], ["و", "حرف عطف يفيد الجمع", "الواو"], ["ي", "ضد كلمة «يسار»", "يمين"]]};
+const ROWS = 5, COLS = 5, R = 54, HW = Math.sqrt(3) * R;
+const $ = id => document.getElementById(id);
+const store = {get(k,d){try{const v=localStorage.getItem('hh_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('hh_'+k,JSON.stringify(v))}catch(e){}}};
+const S = Object.assign({time:'20',pts:'1',level:'i',first:'r',shuffle:'0',sound:'1'}, store.get('settings',{}));
+let G = null; // game state
+
+/* ---------------- sound (Web Audio) ---------------- */
+let AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC = null; } } if(AC && AC.state==='suspended') AC.resume(); return AC; }
+function tone(f, t0, dur, type='sine', vol=.18){ const a=ac(); if(!a||S.sound!=='1') return; const o=a.createOscillator(), g=a.createGain(); o.type=type; o.frequency.setValueAtTime(f,a.currentTime+t0); g.gain.setValueAtTime(0,a.currentTime+t0); g.gain.linearRampToValueAtTime(vol,a.currentTime+t0+.02); g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t0+dur); o.connect(g).connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+dur+.05); }
+const SFX = {
+  click(){ tone(660,0,.08,'triangle',.12); },
+  open(){ tone(520,0,.1,'triangle',.14); tone(780,.08,.14,'triangle',.14); },
+  ok(){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.08,.22,'triangle',.18)); },
+  no(){ tone(300,0,.2,'sawtooth',.1); tone(220,.18,.3,'sawtooth',.1); },
+  tick(){ tone(1000,0,.05,'square',.06); },
+  turn(){ tone(440,0,.08,'sine',.12); tone(587,.08,.12,'sine',.12); },
+  cheer(){
+    const a=ac(); if(!a||S.sound!=='1') return;
+    // fanfare
+    const n=[[523,0],[523,.16],[523,.32],[659,.48],[784,.72],[659,.96],[784,1.12],[1047,1.32]];
+    n.forEach(([f,t])=>{ tone(f,t,.32,'square',.08); tone(f/2,t,.32,'triangle',.1); });
+    // crowd applause: filtered noise bursts
+    const len=a.sampleRate*3.2, buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++){ const env=Math.min(1,i/(a.sampleRate*.3))*Math.max(0,1-i/len); d[i]=(Math.random()*2-1)*env*(Math.random()<.35?1:.25); }
+    const src=a.createBufferSource(); src.buffer=buf; const bp=a.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=.6; const g=a.createGain(); g.gain.value=.35;
+    src.connect(bp).connect(g).connect(a.destination); src.start(a.currentTime+1.4);
+  }
+};
+
+/* ---------------- screens ---------------- */
+function show(id){ ['splash','home','game','win','bye'].forEach(s=>$(s).hidden = s!==id); }
+
+/* ---------------- splash ---------------- */
+(function splash(){
+  const msgs=['جارٍ تجهيز الخلايا…','جارٍ ترتيب الحروف…','جارٍ تحضير الأسئلة…','لحظات ونبدأ!'];
+  let p=0; const bar=$('loadbar'), pb=bar.parentElement;
+  const it=setInterval(()=>{ p=Math.min(100,p+Math.random()*9+3); bar.style.width=p+'%'; pb.setAttribute('aria-valuenow',Math.round(p)); $('loadtxt').textContent=msgs[Math.min(3,Math.floor(p/26))];
+    if(p>=100){ clearInterval(it); setTimeout(()=>show('home'),350); } },120);
+})();
+
+/* ---------------- settings ---------------- */
+document.querySelectorAll('.seg').forEach(seg=>{
+  const k=seg.dataset.k;
+  const sync=()=>seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.v===S[k])));
+  seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S[k]=b.dataset.v; store.set('settings',S); sync(); SFX.click(); });
+  sync();
+});
+['n1','n2'].forEach(id=>{ const v=store.get(id,null); if(v) $(id).value=v; $(id).addEventListener('input',()=>store.set(id,$(id).value)); });
+
+/* ---------------- board geometry ---------------- */
+function cellXY(r,c){ // logical LTR, odd rows shifted; mirrored for RTL so first letter is top-right
+  const W = COLS*HW + HW/2 + 2*44, x0 = 44 + HW/2 + c*HW + (r%2 ? HW/2 : 0);
+  return { x: W - x0, y: 44 + R + r*1.5*R };
+}
+function neighbors(r,c){
+  const odd=r%2===1, d = odd ? [[0,-1],[0,1],[-1,0],[-1,1],[1,0],[1,1]] : [[0,-1],[0,1],[-1,-1],[-1,0],[1,-1],[1,0]];
+  return d.map(([dr,dc])=>[r+dr,c+dc]).filter(([a,b])=>a>=0&&a<ROWS&&b>=0&&b<COLS);
+}
+function hexPts(cx,cy,r){ let s=''; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30); s+=(cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1)+' '; } return s; }
+
+function drawBoard(){
+  const W = COLS*HW + HW/2 + 88, H = 88 + 2*R + (ROWS-1)*1.5*R;
+  const svg=$('board'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  let h = `<defs><filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="3" flood-color="#000" flood-opacity=".35"/></filter></defs>`;
+  // team edges: team1 (green) right & left, team2 (orange) top & bottom
+  h += `<rect x="6" y="40" width="20" height="${H-80}" rx="10" fill="var(--green)"/><rect x="${W-26}" y="40" width="20" height="${H-80}" rx="10" fill="var(--green)"/>`;
+  h += `<rect x="40" y="6" width="${W-80}" height="20" rx="10" fill="var(--orange)"/><rect x="40" y="${H-26}" width="${W-80}" height="20" rx="10" fill="var(--orange)"/>`;
+  G.cells.forEach((cell,i)=>{
+    const {x,y}=cellXY(cell.r,cell.c);
+    h += `<g class="cell" data-i="${i}" role="gridcell" tabindex="0" aria-label="حرف ${cell.l}" filter="url(#sh)">
+      <polygon class="rim" points="${hexPts(x,y,R-1)}" fill="#ffffff"/>
+      <polygon class="face" points="${hexPts(x,y,R-6)}" fill="#fffdf6"/>
+      <text x="${x}" y="${y+17}" text-anchor="middle" font-size="48" fill="#0b6e75">${cell.l}</text></g>`;
+  });
+  svg.innerHTML=h;
+  svg.querySelectorAll('.cell').forEach(g=>{
+    const open=()=>openQ(+g.dataset.i);
+    g.addEventListener('click',open);
+    g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+  });
+}
+function paintCell(i){
+  const cell=G.cells[i], g=$('board').querySelector(`.cell[data-i="${i}"]`); if(!g) return;
+  const face=g.querySelector('.face'), txt=g.querySelector('text'), rim=g.querySelector('.rim');
+  if(cell.owner===1){ face.setAttribute('fill','var(--green)'); rim.setAttribute('fill','var(--green-d)'); txt.setAttribute('fill','#fff'); g.classList.add('done'); }
+  else if(cell.owner===2){ face.setAttribute('fill','var(--orange)'); rim.setAttribute('fill','var(--orange-d)'); txt.setAttribute('fill','#fff'); g.classList.add('done'); }
+  else if(cell.tried){ face.setAttribute('fill','#e7ecef'); }
+}
+
+/* ---------------- game flow ---------------- */
+function teamName(t){ return t===1 ? G.n1 : G.n2; }
+function teamColor(t){ return t===1 ? 'var(--green)' : 'var(--orange)'; }
+function setTurn(t, quiet){
+  G.turn=t; const b=$('turnName'); b.textContent=teamName(t); b.style.setProperty('--c',teamColor(t));
+  b.style.animation='none'; void b.offsetWidth; b.style.animation='';
+  $('sc1').classList.toggle('on',t===1); $('sc2').classList.toggle('on',t===2);
+  if(!quiet) SFX.turn();
+}
+function updateScores(){ $('p1').textContent=G.s1; $('p2').textContent=G.s2; }
+
+function startGame(){
+  ac(); SFX.click();
+  const bank = BANK[S.level].map(([l,q,a])=>({l,q,a}));
+  const order = S.shuffle==='1' ? bank.slice().sort(()=>Math.random()-.5) : bank;
+  G = { n1: ($('n1').value.trim()||'الفريق الأول'), n2: ($('n2').value.trim()||'الفريق الثاني'), s1:0, s2:0, turn:1, over:false,
+        cells: order.map((q,k)=>({...q, r:Math.floor(k/COLS), c:k%COLS, owner:0, tried:false})) };
+  $('tn1').textContent=G.n1; $('tn2').textContent=G.n2; updateScores();
+  show('game'); drawBoard();
+  const first = S.first==='r' ? (Math.random()<.5?1:2) : +S.first;
+  setTurn(first);
+}
+
+/* question */
+let Q=null, TM=null;
+function openQ(i){
+  if(!G||G.over) return; const cell=G.cells[i]; if(cell.owner) return;
+  SFX.open();
+  Q={ i, team:G.turn, second:false };
+  $('qletter').textContent=cell.l; $('qhl').textContent=cell.l; $('qtext').textContent=cell.q;
+  $('qans').hidden=true; $('qans').textContent='الإجابة: '+cell.a; $('qmsg').hidden=true;
+  $('bOk').hidden=false; $('bNo').hidden=false; $('bRv').hidden=false;
+  setQTeam(); $('qbox').hidden=false; $('bOk').focus(); startTimer();
+}
+function setQTeam(){
+  const t=Q.team; $('qteam').textContent=teamName(t); $('qcard').style.setProperty('--c',teamColor(t)); $('qletter').style.setProperty('--c',teamColor(t));
+  $('qturnlbl').textContent = Q.second ? 'فرصة للفريق الآخر' : 'يجيب الآن';
+}
+function startTimer(){
+  clearInterval(TM); const total=+S.time; let left=total; const ring=$('tring'), C=226.2;
+  const draw=()=>{ $('tnum').textContent=left; ring.style.strokeDashoffset = C*(1-left/total); ring.setAttribute('stroke', left<=5?'#e04b4b':(left<=total/2?'#ffb020':'#22b45f')); $('timer').classList.toggle('low',left<=5); };
+  draw();
+  TM=setInterval(()=>{ left--; if(left<=5&&left>0) SFX.tick(); draw(); if(left<=0){ clearInterval(TM); wrong(true); } },1000);
+}
+function closeQ(){ clearInterval(TM); $('qbox').hidden=true; Q=null; }
+function correct(){
+  if(!Q) return; clearInterval(TM); const cell=G.cells[Q.i];
+  cell.owner=Q.team; if(Q.team===1) G.s1+=+S.pts; else G.s2+=+S.pts;
+  SFX.ok(); updateScores(); paintCell(Q.i);
+  const scorer=Q.team; closeQ();
+  const path=findWin(scorer);
+  if(path){ path.forEach(k=>$('board').querySelector(`.cell[data-i="${k}"]`)?.classList.add('win')); G.over=true; setTimeout(()=>endGame(scorer,'path'),1600); return; }
+  if(G.cells.every(c=>c.owner)){ G.over=true; setTimeout(()=>endGame(null,'full'),900); return; }
+  setTurn(G.turn===1?2:1);
+}
+function wrong(timeout){
+  if(!Q) return; clearInterval(TM); SFX.no();
+  const m=$('qmsg'); m.hidden=false; m.className='msg bad';
+  if(!Q.second){
+    m.textContent=(timeout?'انتهى الوقت! ':'إجابة خاطئة! ')+'الفرصة الآن لـ «'+teamName(Q.team===1?2:1)+'»';
+    Q.second=true; Q.team = Q.team===1?2:1; setQTeam(); startTimer();
+  } else {
+    m.textContent=(timeout?'انتهى الوقت للفريقين.':'لم يُجب أحد.')+' تبقى الخلية متاحة.';
+    G.cells[Q.i].tried=true; paintCell(Q.i);
+    $('qans').hidden=false; $('bOk').hidden=true; $('bNo').hidden=true; $('bRv').hidden=true;
+    const next=document.createElement('button'); next.className='nx'; next.textContent='متابعة ←'; next.id='bNx';
+    $('qbtns').appendChild(next); next.focus();
+    next.addEventListener('click',()=>{ next.remove(); const starter=G.turn; closeQ(); setTurn(starter===1?2:1); },{once:true});
+  }
+}
+$('bOk').addEventListener('click',correct);
+$('bNo').addEventListener('click',()=>wrong(false));
+$('bRv').addEventListener('click',()=>{ $('qans').hidden=false; SFX.click(); });
+
+/* win detection: team1 connects right & left columns, team2 connects top & bottom rows */
+function findWin(t){
+  const idx=(r,c)=>r*COLS+c, own=(r,c)=>G.cells[idx(r,c)].owner===t;
+  const starts=[], isGoal=t===1?((r,c)=>c===COLS-1):((r,c)=>r===ROWS-1);
+  for(let k=0;k<(t===1?ROWS:COLS);k++){ const [r,c]=t===1?[k,0]:[0,k]; if(own(r,c)) starts.push([r,c]); }
+  const prev=new Map(), q=[...starts]; starts.forEach(([r,c])=>prev.set(idx(r,c),-1));
+  while(q.length){ const [r,c]=q.shift();
+    if(isGoal(r,c)){ const path=[]; let k=idx(r,c); while(k!==-1){ path.push(k); k=prev.get(k); } return path; }
+    for(const [a,b] of neighbors(r,c)){ const k=idx(a,b); if(own(a,b)&&!prev.has(k)){ prev.set(k,idx(r,c)); q.push([a,b]); } } }
+  return null;
+}
+
+/* end */
+function endGame(winner, why){
+  closeQ();
+  if(!winner && why!=='path'){ winner = G.s1>G.s2?1:(G.s2>G.s1?2:0); }
+  show('win');
+  const wn=$('wname');
+  if(winner){ wn.textContent=teamName(winner); wn.style.setProperty('--c',teamColor(winner)); $('wtitle').textContent = why==='path' ? 'الفريق الفائز بإكمال طريقه 🎉' : 'الفريق الفائز بالنقاط 🎉'; $('cheer').textContent='أحسنتم! أنتم فرسان لغة الضاد'; }
+  else { wn.textContent='تعادل!'; wn.style.setProperty('--c','var(--gold)'); $('wtitle').textContent='انتهت الجولة'; $('cheer').textContent='أداء رائع من الفريقين، أحسنتم جميعًا!'; }
+  $('wscore').innerHTML = `<div style="--c:var(--green)">${esc(G.n1)}: ${G.s1}</div><div style="--c:var(--orange)">${esc(G.n2)}: ${G.s2}</div>`;
+  SFX.cheer(); confetti();
+  $('finish').focus();
+}
+function esc(s){ return s.replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+
+let CF=null;
+function confetti(){
+  const cv=$('confetti'), x=cv.getContext('2d'); cv.width=innerWidth; cv.height=innerHeight;
+  const cols=['#22b45f','#ff8a3d','#ffd34e','#4c7cf0','#ff6f91','#fff'];
+  const P=Array.from({length:180},()=>({x:Math.random()*cv.width,y:-20-Math.random()*cv.height,vx:(Math.random()-.5)*2,vy:2+Math.random()*3,s:6+Math.random()*8,a:Math.random()*6,va:(Math.random()-.5)*.3,c:cols[Math.floor(Math.random()*cols.length)]}));
+  cancelAnimationFrame(CF); const t0=performance.now();
+  (function f(t){ x.clearRect(0,0,cv.width,cv.height);
+    P.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.a+=p.va; if(p.y>cv.height+20 && t-t0<6000){ p.y=-20; p.x=Math.random()*cv.width; }
+      x.save(); x.translate(p.x,p.y); x.rotate(p.a); x.fillStyle=p.c; x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); x.restore(); });
+    if(t-t0<9000) CF=requestAnimationFrame(f); else x.clearRect(0,0,cv.width,cv.height); })(t0);
+}
+
+/* buttons */
+$('start').addEventListener('click',startGame);
+$('finish').addEventListener('click',()=>{ cancelAnimationFrame(CF); SFX.click(); G=null; show('home'); });
+$('toHome').addEventListener('click',()=>{ SFX.click(); closeQ(); G=null; show('home'); });
+$('endEarly').addEventListener('click',()=>{ if(!G) return; G.over=true; endGame(null,'early'); });
+$('exitBtn').addEventListener('click',()=>{ SFX.click(); try{ window.close(); }catch(e){} show('bye'); });
+$('back').addEventListener('click',()=>{ SFX.click(); show('home'); });
+</script>
+
+</body>
+</html>
