@@ -132,6 +132,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .chips .vs{background:transparent;color:var(--muted);font-size:15px;padding:0}
 .setpanel{width:min(780px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#123b45;border-color:rgba(255,255,255,.22);box-shadow:0 20px 60px rgba(0,0,0,.5);animation:pop .35s cubic-bezier(.2,1.3,.4,1) both}
 .sethead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.about{margin:0;text-align:center;color:var(--muted);font-weight:700;font-size:14px;line-height:1.7}
 .xbtn{border:0;background:rgba(255,255,255,.12);color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;font-weight:900}
 @media (max-width:760px){
   .home-wrap{grid-template-columns:1fr}
@@ -176,6 +177,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 </section>
 
 <section class="screen" id="home" hidden aria-label="الشاشة الرئيسية">
+  <button class="gear" id="genOpen" aria-haspopup="dialog">⚙ الإعدادات</button>
   <div class="brand hero">
     <svg class="logo" viewBox="0 0 300 300" role="img" aria-label="شعار خلية حروف"><use href="#logo"/></svg>
     <h1 style="margin:0;font-size:clamp(40px,7vw,64px);font-weight:900">خلية حروف</h1>
@@ -190,7 +192,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 
 <div class="ovl" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="panel setpanel">
-      <div class="sethead"><h2 id="setTitle">⚙ إعدادات اللعبة قبل البدء</h2><button class="xbtn" id="setClose" aria-label="إغلاق">✕</button></div>
+      <div class="sethead"><h2 id="setTitle">🎯 إعداد الجولة: الفريقان والأسئلة</h2><button class="xbtn" id="setClose" aria-label="إغلاق">✕</button></div>
       <div class="teams">
         <div class="tcard t1"><label for="n1">اسم الفريق الأول</label><input id="n1" maxlength="22" value="الفريق الأول" placeholder="الفريق الأول"><small>اللون الأخضر · يصل بين اليمين واليسار ⟷</small></div>
         <div class="tcard t2"><label for="n2">اسم الفريق الثاني</label><input id="n2" maxlength="22" value="الفريق الثاني" placeholder="الفريق الثاني"><small>اللون البرتقالي · يصل بين الأعلى والأسفل ↕</small></div>
@@ -200,8 +202,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
         <div class="opt"><span>نقاط كل إجابة صحيحة</span><div class="seg" data-k="pts"><button data-v="1">1</button><button data-v="2">2</button><button data-v="5">5</button><button data-v="10">10</button></div></div>
         <div class="opt"><span>مستوى الأسئلة</span><div class="seg" data-k="level"><button data-v="p">الأول – الثالث</button><button data-v="i">الرابع – الثالث الإعدادي</button></div></div>
         <div class="opt"><span>من يبدأ؟</span><div class="seg" data-k="first"><button data-v="r">قرعة</button><button data-v="1">الأول</button><button data-v="2">الثاني</button></div></div>
-        <div class="opt"><span>ترتيب الحروف</span><div class="seg" data-k="shuffle"><button data-v="0">أبجدي</button><button data-v="1">عشوائي</button></div></div>
-        <div class="opt"><span>الصوت</span><div class="seg" data-k="sound"><button data-v="1">مفعّل</button><button data-v="0">مكتوم</button></div></div>
       </div>
       <div class="actions"><button class="big go" id="start">▶ ابدأ اللعبة</button><button class="big exit" id="setSave">رجوع</button></div>
     </div>
@@ -239,6 +239,21 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   </div>
 </div>
 
+
+<div class="ovl" id="general" hidden role="dialog" aria-modal="true" aria-labelledby="genTitle">
+    <div class="panel setpanel" style="width:min(560px,100%)">
+      <div class="sethead"><h2 id="genTitle">⚙ الإعدادات العامة</h2><button class="xbtn" id="genClose" aria-label="إغلاق">✕</button></div>
+      <div class="opts" style="grid-template-columns:1fr">
+        <div class="opt"><span>الصوت والمؤثرات</span><div class="seg" data-k="sound"><button data-v="1">🔊 مفعّل</button><button data-v="0">🔇 مكتوم</button></div></div>
+        <div class="opt"><span>الاحتفال عند الفوز (قصاصات ملوّنة)</span><div class="seg" data-k="confetti"><button data-v="1">مفعّل</button><button data-v="0">متوقف</button></div></div>
+        <div class="opt"><span>ترتيب الحروف في اللوحة</span><div class="seg" data-k="shuffle"><button data-v="0">أبجدي</button><button data-v="1">عشوائي في كل جولة</button></div></div>
+        <div class="opt"><span>العرض</span><div><button class="small" id="fsBtn" type="button">⛶ ملء الشاشة</button></div></div>
+      </div>
+      <p class="about">خلية حروف · مدرسة سافرة الابتدائية الإعدادية للبنين<br>إعداد: أ. خالد قاسم الحمري</p>
+      <div class="actions"><button class="big go" id="genSave">✔ حفظ</button></div>
+    </div>
+</div>
+
 <section class="screen" id="win" hidden aria-label="الفائز">
   <canvas id="confetti"></canvas>
   <div class="trophy">🏆</div>
@@ -261,7 +276,7 @@ const BANK = {"p": [["أ", "حيوان يُسمّى ملك الغابة", "أس�
 const ROWS = 5, COLS = 5, R = 54, HW = Math.sqrt(3) * R;
 const $ = id => document.getElementById(id);
 const store = {get(k,d){try{const v=localStorage.getItem('hh_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('hh_'+k,JSON.stringify(v))}catch(e){}}};
-const S = Object.assign({time:'20',pts:'1',level:'i',first:'r',shuffle:'0',sound:'1'}, store.get('settings',{}));
+const S = Object.assign({time:'20',pts:'1',level:'i',first:'r',shuffle:'0',sound:'1',confetti:'1'}, store.get('settings',{}));
 let G = null; // game state
 
 /* ---------------- sound (Web Audio) ---------------- */
@@ -443,7 +458,7 @@ function endGame(winner, why){
   if(winner){ wn.textContent=teamName(winner); wn.style.setProperty('--c',teamColor(winner)); $('wtitle').textContent = why==='path' ? 'الفريق الفائز بإكمال طريقه 🎉' : 'الفريق الفائز بالنقاط 🎉'; $('cheer').textContent='أحسنتم! أداء رائع ومميز'; }
   else { wn.textContent='تعادل!'; wn.style.setProperty('--c','var(--gold)'); $('wtitle').textContent='انتهت الجولة'; $('cheer').textContent='أداء رائع من الفريقين، أحسنتم جميعًا!'; }
   $('wscore').innerHTML = `<div style="--c:var(--green)">${esc(G.n1)}: ${G.s1}</div><div style="--c:var(--orange)">${esc(G.n2)}: ${G.s2}</div>`;
-  SFX.cheer(); confetti();
+  SFX.cheer(); if(S.confetti!=='0') confetti();
   $('finish').focus();
 }
 function esc(s){ return s.replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
@@ -470,6 +485,14 @@ $('setClose').addEventListener('click',closeSettings);
 $('setSave').addEventListener('click',closeSettings);
 $('settings').addEventListener('click',e=>{ if(e.target.id==='settings') closeSettings(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('settings').hidden) closeSettings(); });
+
+function openGen(){ SFX.click(); $('general').hidden=false; $('genClose').focus(); }
+function closeGen(){ SFX.click(); $('general').hidden=true; $('genOpen').focus(); }
+$('genOpen').addEventListener('click',openGen); $('genClose').addEventListener('click',closeGen); $('genSave').addEventListener('click',closeGen);
+$('general').addEventListener('click',e=>{ if(e.target.id==='general') closeGen(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('general').hidden) closeGen(); });
+$('fsBtn').addEventListener('click',()=>{ SFX.click(); try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} });
+document.addEventListener('fullscreenchange',()=>{ $('fsBtn').textContent = document.fullscreenElement ? '⛶ إنهاء ملء الشاشة' : '⛶ ملء الشاشة'; });
 /* buttons */
 $('start').addEventListener('click',()=>{ $('settings').hidden=true; syncHomeNames(); startGame(); });
 $('finish').addEventListener('click',()=>{ cancelAnimationFrame(CF); SFX.click(); G=null; show('home'); });
