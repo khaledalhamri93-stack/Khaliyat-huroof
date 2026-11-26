@@ -104,7 +104,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .ans[hidden]{display:none}
 .qbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .qbtns button{border:0;border-radius:16px;padding:12px 22px;font-size:19px;font-weight:900;box-shadow:0 5px 0 rgba(0,0,0,.2)}
-.ok{background:var(--green);color:#fff}.no{background:#e04b4b;color:#fff}.rv{background:#e9edf0;color:var(--ink)}.nx{background:var(--teal);color:#fff}
+.ok{background:var(--green);color:#fff}.tb2{background:var(--orange)}.ok.cur{box-shadow:0 0 0 4px var(--gold),0 5px 0 rgba(0,0,0,.2)}
+.ecard{--c:var(--teal)}.ehint{margin:0;text-align:center;color:#5d6b78;font-weight:700;font-size:14px}
+.cell.done{cursor:pointer}.no{background:#e04b4b;color:#fff}.rv{background:#e9edf0;color:var(--ink)}.nx{background:var(--teal);color:#fff}
 .msg{text-align:center;font-weight:900;font-size:20px;padding:6px;border-radius:14px}
 .msg.bad{background:#fde8e8;color:#b02a2a}.msg.good{background:#e3f6ea;color:var(--green-d)}
 
@@ -232,13 +234,29 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div class="msg" id="qmsg" hidden></div>
     <div class="ans" id="qans" hidden></div>
     <div class="qbtns" id="qbtns">
-      <button class="ok" id="bOk">✔ إجابة صحيحة</button>
+      <button class="ok tb1" id="bOk1">✔ أجاب <span class="tnm" data-t="1">-</span></button>
+      <button class="ok tb2" id="bOk2">✔ أجاب <span class="tnm" data-t="2">-</span></button>
       <button class="no" id="bNo">✘ إجابة خاطئة</button>
       <button class="rv" id="bRv">👁 إظهار الإجابة</button>
     </div>
   </div>
 </div>
 
+
+<div class="ovl" id="editBox" hidden role="dialog" aria-modal="true" aria-labelledby="eTitle">
+  <div class="qcard ecard" id="ecard">
+    <div class="qhead"><div class="qletter" id="eletter">أ</div><div class="qwho"><small>تعديل الخلية</small><b id="eTitle">من أجاب عن هذا السؤال؟</b></div></div>
+    <div class="qtext" id="etext" style="font-size:22px">-</div>
+    <div class="ans" id="eans"></div>
+    <div class="qbtns">
+      <button class="ok tb1" id="eT1">أجاب <span class="tnm" data-t="1">-</span></button>
+      <button class="ok tb2" id="eT2">أجاب <span class="tnm" data-t="2">-</span></button>
+      <button class="rv" id="eClr">↺ إلغاء التلوين</button>
+      <button class="nx" id="eX">إغلاق</button>
+    </div>
+    <p class="ehint">تتغيّر النقاط تلقائيًا عند نقل الخلية من فريق إلى آخر.</p>
+  </div>
+</div>
 
 <div class="ovl" id="general" hidden role="dialog" aria-modal="true" aria-labelledby="genTitle">
     <div class="panel setpanel" style="width:min(560px,100%)">
@@ -399,15 +417,17 @@ function startGame(){
 /* question */
 let Q=null, TM=null;
 function openQ(i){
-  if(!G||G.over) return; const cell=G.cells[i]; if(cell.owner) return;
+  if(!G||G.over) return; const cell=G.cells[i]; if(cell.owner){ openEdit(i); return; }
   SFX.open();
   Q={ i, team:G.turn, second:false };
   $('qletter').textContent=cell.l; $('qhl').textContent=cell.l; $('qtext').textContent=cell.q;
   $('qans').hidden=true; $('qans').textContent='الإجابة: '+cell.a; $('qmsg').hidden=true;
-  $('bOk').hidden=false; $('bNo').hidden=false; $('bRv').hidden=false;
-  setQTeam(); $('qbox').hidden=false; $('bOk').focus(); startTimer();
+  $('bOk1').hidden=false; $('bOk2').hidden=false; $('bNo').hidden=false; $('bRv').hidden=false; fillNames();
+  setQTeam(); $('qbox').hidden=false; $(Q.team===1?'bOk1':'bOk2').focus(); startTimer();
 }
+function fillNames(){ document.querySelectorAll('.tnm').forEach(e=>e.textContent= e.dataset.t==='1'?G.n1:G.n2); }
 function setQTeam(){
+  $('bOk1').classList.toggle('cur',Q.team===1); $('bOk2').classList.toggle('cur',Q.team===2);
   const t=Q.team; $('qteam').textContent=teamName(t); $('qcard').style.setProperty('--c',teamColor(t)); $('qletter').style.setProperty('--c',teamColor(t));
   $('qturnlbl').textContent = Q.second ? 'فرصة للفريق الآخر' : 'يجيب الآن';
 }
@@ -418,16 +438,42 @@ function startTimer(){
   TM=setInterval(()=>{ left--; if(left<=5&&left>0) SFX.tick(); draw(); if(left<=0){ clearInterval(TM); wrong(true); } },1000);
 }
 function closeQ(){ clearInterval(TM); $('qbox').hidden=true; Q=null; }
-function correct(){
-  if(!Q) return; clearInterval(TM); const cell=G.cells[Q.i];
-  cell.owner=Q.team; if(Q.team===1) G.s1+=+S.pts; else G.s2+=+S.pts;
-  SFX.ok(); updateScores(); paintCell(Q.i);
-  const scorer=Q.team; closeQ();
-  const path=findWin(scorer);
-  if(path){ path.forEach(k=>$('board').querySelector(`.cell[data-i="${k}"]`)?.classList.add('win')); G.over=true; setTimeout(()=>endGame(scorer,'path'),1600); return; }
-  if(G.cells.every(c=>c.owner)){ G.over=true; setTimeout(()=>endGame(null,'full'),900); return; }
+function setOwner(i, t){ // move a cell to team t (0 = free) and keep scores in step
+  const cell=G.cells[i];
+  if(cell.owner===1) G.s1-=cell.pts||0; else if(cell.owner===2) G.s2-=cell.pts||0;
+  cell.owner=t; cell.pts = t ? +S.pts : 0;
+  if(t===1) G.s1+=cell.pts; else if(t===2) G.s2+=cell.pts;
+  updateScores(); resetCell(i); paintCell(i);
+}
+function resetCell(i){ const g=$('board').querySelector(`.cell[data-i="${i}"]`); if(!g) return;
+  g.querySelector('.face').setAttribute('fill','#fffdf6'); g.querySelector('.rim').setAttribute('fill','#ffffff'); g.querySelector('text').setAttribute('fill','#0b6e75'); g.classList.remove('done'); }
+function checkEnd(t){
+  const path=findWin(t);
+  if(path){ path.forEach(k=>$('board').querySelector(`.cell[data-i="${k}"]`)?.classList.add('win')); G.over=true; setTimeout(()=>endGame(t,'path'),1600); return true; }
+  if(G.cells.every(c=>c.owner)){ G.over=true; setTimeout(()=>endGame(null,'full'),900); return true; }
+  return false;
+}
+function correct(t){
+  if(!Q) return; clearInterval(TM);
+  const i=Q.i; setOwner(i, t); SFX.ok(); closeQ();
+  if(checkEnd(t)) return;
   setTurn(G.turn===1?2:1);
 }
+/* edit a coloured cell: change who answered or free it */
+let EI=null;
+function openEdit(i){
+  EI=i; const c=G.cells[i]; fillNames(); SFX.click();
+  $('eletter').textContent=c.l; $('eletter').style.setProperty('--c', teamColor(c.owner)); $('etext').textContent=c.q; $('eans').textContent='الإجابة: '+c.a;
+  $('eT1').classList.toggle('cur',c.owner===1); $('eT2').classList.toggle('cur',c.owner===2);
+  $('editBox').hidden=false; $('eX').focus();
+}
+function closeEdit(){ $('editBox').hidden=true; EI=null; }
+function editTo(t){ if(EI==null) return; const i=EI; setOwner(i,t); SFX.click(); closeEdit(); if(t) checkEnd(t); }
+$('eT1').addEventListener('click',()=>editTo(1));
+$('eT2').addEventListener('click',()=>editTo(2));
+$('eClr').addEventListener('click',()=>editTo(0));
+$('eX').addEventListener('click',()=>{ SFX.click(); closeEdit(); });
+$('editBox').addEventListener('click',e=>{ if(e.target.id==='editBox') closeEdit(); });
 function wrong(timeout){
   if(!Q) return; clearInterval(TM); SFX.no();
   const m=$('qmsg'); m.hidden=false; m.className='msg bad';
@@ -438,13 +484,14 @@ function wrong(timeout){
     m.textContent=(timeout?'انتهى الوقت للفريقين.':'لم يُجب أحد.')+' تبقى الخلية متاحة بسؤال جديد.';
     const cl=G.cells[Q.i]; cl.tried=true; paintCell(Q.i);
     if(cl.alts && cl.alts.length){ const nx=cl.alts.shift(); cl.id=nx.id; cl.q=nx.q; cl.a=nx.a; G.used.add(nx.id); saveUsed(); }
-    $('qans').hidden=false; $('bOk').hidden=true; $('bNo').hidden=true; $('bRv').hidden=true;
+    $('qans').hidden=false; $('bOk1').hidden=true; $('bOk2').hidden=true; $('bNo').hidden=true; $('bRv').hidden=true;
     const next=document.createElement('button'); next.className='nx'; next.textContent='متابعة ←'; next.id='bNx';
     $('qbtns').appendChild(next); next.focus();
     next.addEventListener('click',()=>{ next.remove(); const starter=G.turn; closeQ(); setTurn(starter===1?2:1); },{once:true});
   }
 }
-$('bOk').addEventListener('click',correct);
+$('bOk1').addEventListener('click',()=>correct(1));
+$('bOk2').addEventListener('click',()=>correct(2));
 $('bNo').addEventListener('click',()=>wrong(false));
 $('bRv').addEventListener('click',()=>{ $('qans').hidden=false; SFX.click(); });
 
@@ -507,7 +554,7 @@ document.addEventListener('fullscreenchange',()=>{ $('fsBtn').textContent = docu
 /* buttons */
 $('start').addEventListener('click',()=>{ $('settings').hidden=true; syncHomeNames(); startGame(); });
 $('finish').addEventListener('click',()=>{ cancelAnimationFrame(CF); SFX.click(); G=null; show('home'); });
-$('toHome').addEventListener('click',()=>{ SFX.click(); closeQ(); G=null; show('home'); });
+$('toHome').addEventListener('click',()=>{ SFX.click(); closeQ(); closeEdit(); G=null; show('home'); });
 $('endEarly').addEventListener('click',()=>{ if(!G) return; G.over=true; endGame(null,'early'); });
 $('exitBtn').addEventListener('click',()=>{ SFX.click(); try{ window.close(); }catch(e){} show('bye'); });
 $('back').addEventListener('click',()=>{ SFX.click(); show('home'); });
